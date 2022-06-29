@@ -1,0 +1,70 @@
+{
+	"name": "@liquicode/lib-user-storage",
+	"version": "0.1.0",
+	"description": "A storage engine for user objects. Tracks user identity, ownership, and permissions.",
+	"homepage": "http://lib-user-storage.liquicode.com",
+	"license": "MIT",
+	"public": true,
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/liquicode/lib-user-storage"
+	},
+	"authors": [
+		{
+			"name": "Andre' G. Bowlin",
+			"email": "agbowlin@gmail.com",
+			"homepage": "http://liquicode.com"
+		}
+	],
+	"main": "src/lib-user-storage.js",
+	"files": [
+		"readme.md",
+		"license.md",
+		"VERSION",
+		"dist/*",
+		"docs/*",
+		"src/*",
+		"tests/*"
+	],
+	"ignore": [
+		".*",
+		"~*",
+		"bower_components",
+		"node_modules",
+		"build"
+	],
+	"keywords": [
+		"javascript",
+		"js",
+		"nodejs",
+		"node",
+		"mongo",
+		"mongodb",
+		"json",
+		"jsondb",
+		"jsondbfs",
+		"file system",
+		"in-memory"
+	],
+	"dependencies": {
+		"babel-polyfill": "^6.26.0",
+		"json-criteria": "^2.6.0",
+		"lockfile": "^1.0.4",
+		"mongodb": "^4.6.0",
+		"uuid": "^8.3.2"
+	},
+	"devDependencies": {
+		"@vivaxy/here": "^3.4.1",
+		"mocha": "^8.3.0",
+		"webpack": "^5.24.3",
+		"webpack-cli": "^4.5.0",
+		"webpack-node-externals": "^2.5.2"
+	},
+	"scripts": {
+		"run-tests": "mocha -u bdd tests/*.js --timeout 0 --slow 10 --colors",
+		"run-docs-web-server": "npx here --directory docs --port 4200 --watch 1 --silent",
+		"010-webpack": "bash build/webpack/010-webpack.sh",
+		"810-s3-sync-docs": "bash build/s3/810-s3-sync-docs.sh",
+		"910-release-version": "node build/custom/910-release-version.js"
+	}
+}

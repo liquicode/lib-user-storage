@@ -1,0 +1,4 @@
+export IMAGE_NAME='docker image name'
+export REPO_URL='url to your docker repository'
+export AWS_PROFILE='AWS user name or IAM'
+export AWS_BUCKET=template-lib.liquicode.com
