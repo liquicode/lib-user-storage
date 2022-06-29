@@ -29,24 +29,24 @@ LIB_USER_STORAGE.DefaultConfiguration =
 	function ()
 	{
 		return {
-			// User Storage Configuration
-			user_info_member: '__info',
-			throw_permission_errors: false,
-			// MongoDB Provider Configuration
-			mongo_provider: {
-				enabled: false,
-				collection_name: 'Collection-Name',
-				database_name: 'Database-Name',
-				connection_string: 'mongodb://<username>:<password>@<server-address',
-			},
-			// Json Provider Configuration
+			// - User Storage Configuration -
+			user_info_member: '__info',			// Name of the info field used in objects (e.g. thing.__info.id = '...').
+			throw_permission_errors: false,		// Throw errors when user fails to have read or write access to an object.
+			// - Json Provider Configuration -
 			json_provider: {
-				enabled: false,
-				collection_name: 'Collection-Name',
-				database_name: '/path/to/store/collections',
-				clear_collection_on_start: false,
-				flush_on_update: false,
-				flush_every_ms: 0,
+				enabled: false,									// enable/disable this storage provider.
+				collection_name: 'Collection-Name',				// Name of the collection. Also, name of the flush file.
+				database_name: '/path/to/store/collections',	// Path of the flush file.
+				clear_collection_on_start: false,				// Clear the flush file on startup.
+				flush_on_update: false,							// Rewrite the flush file after each change (create, update, delete).
+				flush_every_ms: 0,								// Continuously rewrite the flush file every 'X' milliseconds.
+			},
+			// - MongoDB Provider Configuration -
+			mongo_provider: {
+				enabled: false,							// enable/disable this storage provider.
+				collection_name: 'Collection-Name',		// Name of the MongoDB collection.
+				database_name: 'Database-Name',			// Name of the MongoDB database.
+				connection_string: 'mongodb://<username>:<password>@<server-address',	// Connection string to the MongoDB server.
 			},
 		};
 	};

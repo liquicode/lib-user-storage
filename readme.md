@@ -91,7 +91,7 @@ const LIB_USER_STORAGE = require( '@liquicode/lib-user-storage' );
 These function are available from the library root (e.g. `LIB_USER_STORAGE`):
 
 - `DefaultConfiguration ( )`
-	: Returns a default storage configuration.
+	: Returns a default storage configuration object.
 
 - `NewUserStorage ( Configuration )`
 	: Returns a `UserStorage` object that exports the rest of the functions below.

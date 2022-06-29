@@ -12,6 +12,7 @@
 - Concepts
 
 	- [Configuration](guides/Configuration.md)
+	- [Criteria](guides/Criteria.md)
 	- [User Object](guides/UserObject.md)
 	- [User Storage](guides/UserStorage.md)
 	- [Storage Providers](guides/StorageProviders.md)
