@@ -21,20 +21,22 @@ A storage engine for user objects. Tracks object identity, ownership, and permis
 ```
 
 
+**NOTE: This project supercedes the older project [lib-managed-storage](https://github.com/liquicode/lib-managed-storage).**
+
+
 Overview
 ---------------------------------------------------------------------
 
 One of the primary and initial challenges of developing a user-facing system is that of implementating a
 storage mechanism which promotes the concept of user owned data.
 This can be privata data such as documents and images.
-This can also refer to data which is attributed to a user such as a blog post or a comment.
+This can also refer to data which is attributed to the user such as a blog post or comment.
 
 Furthermore, it is a growing expectation among application users to not only be able to maintain private
 data (or data attributed to them), but also to be able to share that data with other users of the same application.
 
 This library offers a way for NodeJS applications to implement storage strategies which promote user ownership
 and the sharing of stored data.
-The design goals behind this library favor the flexibility and ease of use of the library.
 
 This library does not provide an authentication mechanism.
 It assumes, by the time you are calling its functions, that you have already affirmed the identity of the user.
@@ -90,6 +92,33 @@ doc = await storage.CreateOne( Bob, { name: 'My Document 2', text: 'This is my o
 // Create a private document for Eve.
 doc = await storage.CreateOne( Eve, { name: 'Evil Plans', text: 'Step 1: Take over the world.' } );
 
+```
+
+
+How It Works
+---------------------------------------------------------------------
+
+When storing user data to a backend storage device (e.g. MongoDB, JSON files) this library appends and maintains
+a special "info" field to each stored object. The name of this "info" field is configurable and defaults to `__info`.
+
+For example, when you store a simple object such as:
+```javascript
+let thing = await storage.CreateOne( user, { foo: 'bar' } );
+```
+the stored representation (and the object returned to you) will look something like this:
+```javascript
+thing = {
+	foo: 'bar',
+	__info: {
+		id = 'cda0f50e-84b4-4a4e-91f5-29f73a00ffbb',	// unique id for this object.
+		created_at: '2022-06-30T03:45:24.415Z',			// Timestamp of when this object was created.
+		updated_at: '2022-06-30T03:45:24.415Z',			// Timestamp of when this object was last updated.
+		owner_id = "alice@fake.com",					// User Identifier (anything unique to the user).
+		readers = [],									// Array of user ids that have read access.
+		writers = [],									// Array of user ids that have write access.
+		public = false,									// Flag to give everyone read access to this object.
+	}
+}
 ```
 
 

@@ -1,7 +1,7 @@
 # lib-user-storage
-***(v0.0.15)***
+***(v0.1.0)***
 
-A storage engine for managed objects. Tracks object identity, ownership, and permissions.
+A storage engine for user objects. Tracks object identity, ownership, and permissions.
 
 ```
                                                                                           +--------------------------+
@@ -9,7 +9,7 @@ A storage engine for managed objects. Tracks object identity, ownership, and per
                                                                                       ==> +--------------------------+
                                                                                      /    | Reads and writes objects |
 +-----------------+      +------------------------+      +--------------------+     /     | to a MongoDB instance.   |
-|   Application   |      |     ManagedObject      |      |   ManagedStorage   |    /      +--------------------------+
+|   Application   |      |      UserObject        |      |    UserStorage     |    /      +--------------------------+
 +-----------------+ <==> +------------------------+ <==> +--------------------+ <==      
 | Works with user |      | Combines user identity |      | Controls access    |    \     
 | owned objects.  |      | with object identity.  |      | by user identity.  |     \     +--------------------------+
@@ -19,6 +19,27 @@ A storage engine for managed objects. Tracks object identity, ownership, and per
                                                                                           | to an in-memory array.   |
                                                                                           +--------------------------+
 ```
+
+
+**NOTE: This project supercedes the older project [lib-managed-storage](https://github.com/liquicode/lib-managed-storage).**
+
+
+Overview
+---------------------------------------------------------------------
+
+One of the primary and initial challenges of developing a user-facing system is that of implementating a
+storage mechanism which promotes the concept of user owned data.
+This can be privata data such as documents and images.
+This can also refer to data which is attributed to the user such as a blog post or comment.
+
+Furthermore, it is a growing expectation among application users to not only be able to maintain private
+data (or data attributed to them), but also to be able to share that data with other users of the same application.
+
+This library offers a way for NodeJS applications to implement storage strategies which promote user ownership
+and the sharing of stored data.
+
+This library does not provide an authentication mechanism.
+It assumes, by the time you are calling its functions, that you have already affirmed the identity of the user.
 
 
 Getting Started
@@ -46,8 +67,8 @@ let Alice = { user_id: 'alice@fake.com', user_role: 'admin' };
 let Bob = { user_id: 'bob@fake.com', user_role: 'user' };
 let Eve = { user_id: 'eve@fake.com', user_role: 'user' };
 
-// Get the managed storage.
-let storage = LIB_USER_STORAGE.NewManagedStorage(); // Defaults to an in-memory json array.
+// Get the user storage.
+let storage = LIB_USER_STORAGE.NewUserStorage(); // Defaults to an in-memory json array.
 
 let doc = null;
 
@@ -74,6 +95,33 @@ doc = await storage.CreateOne( Eve, { name: 'Evil Plans', text: 'Step 1: Take ov
 ```
 
 
+How It Works
+---------------------------------------------------------------------
+
+When storing user data to a backend storage device (e.g. MongoDB, JSON files) this library appends and maintains
+a special "info" field to each stored object. The name of this "info" field is configurable and defaults to `__info`.
+
+For example, when you store a simple object such as:
+```javascript
+let thing = await storage.CreateOne( user, { foo: 'bar' } );
+```
+the stored representation (and the object returned to you) will look something like this:
+```javascript
+thing = {
+	foo: 'bar',
+	__info: {
+		id = 'cda0f50e-84b4-4a4e-91f5-29f73a00ffbb',	// unique id for this object.
+		created_at: '2022-06-30T03:45:24.415Z',			// Timestamp of when this object was created.
+		updated_at: '2022-06-30T03:45:24.415Z',			// Timestamp of when this object was last updated.
+		owner_id = "alice@fake.com",					// User Identifier (anything unique to the user).
+		readers = [],									// Array of user ids that have read access.
+		writers = [],									// Array of user ids that have write access.
+		public = false,									// Flag to give everyone read access to this object.
+	}
+}
+```
+
+
 API Summary
 ---------------------------------------------------------------------
 
@@ -88,16 +136,27 @@ const LIB_USER_STORAGE = require( '@liquicode/lib-user-storage' );
 ```
 
 ### Library Functions
+These function are available from the library root (e.g. `LIB_USER_STORAGE`):
 
 - `DefaultConfiguration ( )`
-	: Returns a default storage configuration.
+	: Returns a default storage configuration object.
 
-- `NewManagedObject ( Owner, Prototype )`
-	: Returns a new `ManagedObject` containing management data in the `_m` field
-	and the contents of `Prototype` in the `_o` field.
+- `NewUserStorage ( Configuration )`
+	: Returns a `UserStorage` object that exports the rest of the functions below.
 
-- `NewManagedStorage ( Configuration )`
-	: Returns a `ManagedStorage` object that exports the functions below.
+### Utility Functions
+
+- `NewUserObject ( Owner, Prototype )`
+	: Returns a new `UserObject` containing the values of `Prototype` and a complete user info portion.
+	As specified by the `user_info_member` configuration setting (defaults to `__info`).
+
+- `GetUserInfo ( DataObject )`
+	: Returns the user info portion of the object.
+	As specified by the `user_info_member` configuration setting (defaults to `__info`).
+
+- `GetUserData ( DataObject )`
+	: Returns the object data minus the user info portion of the object.
+	As specified by the `user_info_member` configuration setting (defaults to `__info`).
 
 ### Discovery Functions
 
@@ -155,22 +214,22 @@ const LIB_USER_STORAGE = require( '@liquicode/lib-user-storage' );
 ### Common Function Parameters
 
 - `User`
-	: A json object containing the fields `user_id` and `user_role`.
+	: A json object containing values for the fields `user_id` and `user_role`.
 
 - `Criteria` can be one of:
-	- If missing/undefined or null, then all objects are matched.
-	- A regular json object whose values are matched against the `_o` field of managed objects in storage.
+	- If missing/undefined, `null`, or empty `{}`, then all objects are matched.
+	- A regular json object whose values are matched against the objects in storage.
 		This is a MongoDB-like object query to specify one or more objects.
 		See [json-criteria](guides/json-criteria.md) for more information.
-	- A string representing the value of `_m.id` to find in storage.
-	- A managed object with `_m` and/or `_o` fields.
-		If `_m` is present, then the value of `_m.id` will be matched.
-		If `_m` or `_m.id` is missing, then `_o` will be matched as a regular json object.
+	- A string representing the value of the user info `id` field to match in storage.
+	- A user object with or without a user info portion of the object.
+		If user info is present, then the value of user info `id` field will be matched.
+		If user info is missing, then the object will be matched as a regular json object.
 
 - The `DataObject` parameter in the `WriteOne` function can be:
-	- A managed object with `_m` and/or `_o` fields.
-		If the `_o` field exists, it will be used to overwrite the `_o` field of the stored object.
-	- A json object that will be used to overwrite the `_o` field of the stored object.
+	- A user object with or without a user info portion of the object.
+		If user info is present, it is ignored during any updates.
+	- A json object that will be used to overwrite data fields of the matched stored object.
 
 
 Notices
@@ -178,13 +237,14 @@ Notices
 
 - Dedicated to my family, without whom, this work would not be possible.
 - Source code ASCII art banners generated using [https://patorjk.com/software/taag](https://patorjk.com/software/taag/#p=display&f=Univers) with the "Univers" font.
-- The `JsonProvider` implementation was partly inspired by the project [jsondbfs](https://github.com/mcmartins/jsondbfs).
+- The `JsonProvider` implementation in this library was inspired in part by the project [jsondbfs](https://github.com/mcmartins/jsondbfs).
+- The `JsonProvider` implementation in this library was inspired in part by the project [NeDB](https://github.com/louischatriot/nedb).
 
 
 ### Dependencies
 
 - [uuid](https://www.npmjs.com/package/uuid)
-	: Used by `ManagedStorage` and `JsonProvider` to generate unique identifiers.
+	: Used by `UserStorage` and `JsonProvider` to generate unique identifiers.
 - [mongodb](https://www.npmjs.com/package/mongodb)
 	: Used by the `MongoProvider` implementation.
 - [json-criteria](https://www.npmjs.com/package/json-criteria)
@@ -195,7 +255,7 @@ Notices
 	: Used by `JsonProvider` when flushing in-memory objects to disk.
 
 
-### More Links
+### Project Links
 
 - [Library Source Code](https://github.com/liquicode/lib-user-storage)
 - [Library Docs Site](http://lib-user-storage.liquicode.com)

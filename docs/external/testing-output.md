@@ -10,6 +10,19 @@
       ✓ LIB_ASSERT.strictEqual( 1, 1 )
       ✓ LIB_ASSERT.notStrictEqual( 0, 1 )
 
+  json-criteria Tests: Matching
+    ✓ Should perform a simple match
+    ✓ Should perform a similar match
+    ✓ Should perform a nested match
+    ✓ Should perform an array match
+
+  json-criteria Tests: Not Matching
+    ✓ Should not match 'undefined'
+    ✓ Should not match 'null'
+    ✓ Should not match empty object '{}'
+    ✓ Should not match different values
+    ✓ Should not match different objects
+
   010) MongoProvider Tests
     Collection Tests; 10 objects
       ✓ Should create test objects
@@ -40,9 +53,10 @@
       ✓ Should have a disk file
       ✓ Should delete all test objects
 
-  020) ManagedStorage Tests
+  020) UserStorage Tests
     Collection Tests; 1000 objects
       ✓ Should create test objects
+      ✓ Should count all objects
       ✓ Should read and write test objects
       ✓ Should find all test objects
       ✓ Should delete all test objects
@@ -58,7 +72,7 @@
       ✓ Should not allow readers to update documents
 
 
-  32 passing (40s)
+  42 passing (17s)
 
 
 ```
