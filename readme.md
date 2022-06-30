@@ -21,6 +21,25 @@ A storage engine for user objects. Tracks object identity, ownership, and permis
 ```
 
 
+Overview
+---------------------------------------------------------------------
+
+One of the primary and initial challenges of developing a user-facing system is that of implementating a
+storage mechanism which promotes the concept of user owned data.
+This can be privata data such as documents and images.
+This can also refer to data which is attributed to a user such as a blog post or a comment.
+
+Furthermore, it is a growing expectation among application users to not only be able to maintain private
+data (or data attributed to them), but also to be able to share that data with other users of the same application.
+
+This library offers a way for NodeJS applications to implement storage strategies which promote user ownership
+and the sharing of stored data.
+The design goals behind this library favor the flexibility and ease of use of the library.
+
+This library does not provide an authentication mechanism.
+It assumes, by the time you are calling its functions, that you have already affirmed the identity of the user.
+
+
 Getting Started
 ---------------------------------------------------------------------
 

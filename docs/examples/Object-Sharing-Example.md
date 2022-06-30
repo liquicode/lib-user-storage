@@ -54,31 +54,35 @@ Users can manipulate objects that they own
 ---------------------------------------------------------------------
 
 Users have access to the documents they create.
-When reading objects from `UserStorage`, a `UserObject` will be returned.
-This object will have a `_m` field containing the object's management state and
-a `_o` field containing the application data for the object.
+When reading objects from `UserStorage`, an object will be returned which
+will have a `__info` field containing the object's management state.
 
-It is not advisable to modify the contents of the `_m` field.
-During updates, only the `_o` portion of the object is saved.
-The contents of the `_m` field will not be updated. 
+It is not advisable to modify the contents of the `__info` field.
+If the name of the `__info` field collides with another field you need,
+then you can change it in the configuration element `user_info_member`.
+
 
 ```javascript
 // Alice can read and write her own documents.
 doc = await storage.FindOne( Alice, { name: 'Public Document' } );
-// doc._m.id = "f02ca9..."
-// doc._m.owner_id = "alice@fake.com"
-// doc._m.readers = []
-// doc._m.writers = []
-// doc._m.public = true
-doc._o.text = 'Updated document content.';
+// doc.__info.id = "f02ca9..."
+// doc.__info.owner_id = "alice@fake.com"
+// doc.__info.readers = []
+// doc.__info.writers = []
+// doc.__info.public = true
+doc.text = 'Updated document content.';
 count = await storage.WriteOne( Alice, doc );
 // count = 1, if successful.
 
 // Alice can read and write other user's own documents.
 doc = await storage.FindOne( Alice, { name: 'My Document' } ); // Read one of Bob's documents.
-doc._o.text += ' I approve!'; // Modify the document content.
-doc_0.approved = true; // Add a field.
+doc.text += ' I approve!'; // Modify the document content.
+doc.approved = true; // Dynamically add a field.
 count = await storage.WriteOne( Alice, doc ); // Update the document.
+
+// Find all approved documents so far.
+count = await storage.Count( Alice, { approved: true } );
+// count = 1
 
 // Eve can read and write her own documents.
 doc = await storage.FindOne( Eve, { name: 'Evil Plans' } );

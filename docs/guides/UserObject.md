@@ -10,25 +10,24 @@ Object Lifecycle Management
 This library models an object and manages the following aspects of its lifecycle:
 - Object Creation: Creation and modification timestamps are maintained for each object.
 - Object Identity: Each object has a unique id.
-- Object Ownership: Every object has a user as an owner. There exists a built-in [System Administrator] user account.
+- Object Ownership: Every object has a user as an owner. There exists built-in [System Administrator] user account.
 - Object Serialization: Objects are saved to a structured storage using a MongoDB-like interface.
 - Object Manipulation: Objects can be created, listed, searched, updated, and removed.
 
 
-User Object Structure
+User Info Structure
 ---------------------------------------------------------------------
 
-- A user object will have two root members:
-	- `_m` to store internal object metadata. This structure is static and maintained by this code.
-		- `_m.id`: The object's unique id, required by the interface functions.
-		- `_m.created_at`: The creation timestamp (zulu).
-		- `_m.updated_at`: The modification timestamp (zulu).
-		- `_m.owner_id`: The `User.user_id` of the object's owner.
-		- `_m.readers`: Array of `User.user_id`s that have read access to this object.
-		- `_m.writers`: Array of `User.user_id`s that have read/write access to this object.
-		- `_m.public`: Boolean flag marking this object as public.
-	- `_o` to store application object data.
-		This structure is defined by the application via the `ObjectDefinition` structure.
+- A storage object will have a unique root member to store internal object metadata.
+	This structure is static and IS maintained by the library code.
+	- `__info`
+		- `__info.id`: The object's unique id, required by the interface functions.
+		- `__info.created_at`: The creation timestamp (zulu).
+		- `__info.updated_at`: The modification timestamp (zulu).
+		- `__info.owner_id`: The `User.user_id` of the object's owner.
+		- `__info.readers`: Array of `User.user_id`s that have read access to this object.
+		- `__info.writers`: Array of `User.user_id`s that have read/write access to this object.
+		- `__info.public`: Boolean flag marking this object as public.
 
 
 User Objects
@@ -46,10 +45,9 @@ let Alice = {
 
 The `User.user_id` field must be a string value which uniquely identifies a user (e.g. an email address).
 
-The `User.user_role` field can be one of:
-- `'admin'`: A role that permits system-wide access to objects, regardless of ownership.
-- `'super'`: A role that permits system-wide access to objects, regardless of ownership.
-- `'user'`: A role that allows a user access to objects that they create, or are shared to by another user.
-- `''` (empty): A role that allows a user access to only objects marked as public.
+The `User.user_role` field can be one of the predefined roles `admin` or `super`,
+which are roles that permit system-wide access to objects, regardless of ownership.
+Applications can define their own roles apart from `admin` or `super` and implement further permission policies.
+Such roles are referred to, collectively, as the `user` role throughout the rest of this documentation.
 
 
