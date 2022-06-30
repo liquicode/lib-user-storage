@@ -44,7 +44,10 @@
 		"jsondb",
 		"jsondbfs",
 		"file system",
-		"in-memory"
+		"in-memory",
+		"user",
+		"permissions",
+		"security"
 	],
 	"dependencies": {
 		"babel-polyfill": "^6.26.0",
