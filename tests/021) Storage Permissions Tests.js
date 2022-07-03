@@ -28,7 +28,7 @@ describe( `021) Storage Permissions Tests`,
 				// Configure the test environment.
 				let user_config = {
 					throws_permission_errors: false, // Disable permission errors for testing.
-					json_provider: {
+					JsonProvider: {
 						enabled: true,
 						collection_name: 'test-objects',
 						database_name: LIB_PATH.join( __dirname, '~temp' ),

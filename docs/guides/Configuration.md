@@ -11,7 +11,7 @@ let Configuration = {
 	throw_permission_errors: false,		// Throw errors when user fails to have read or write access to an object.
 	// - MongoDB Provider Configuration -
 	// - Json Provider Configuration -
-	json_provider: {
+	JsonProvider: {
 		enabled: false,									// enable/disable this storage provider.
 		collection_name: 'Collection-Name',				// Name of the collection. Also, name of the flush file.
 		database_name: '/path/to/store/collections',	// Path of the flush file.
@@ -19,7 +19,7 @@ let Configuration = {
 		flush_on_update: false,							// Rewrite the flush file after each change (create, update, delete).
 		flush_every_ms: 0,								// Continuously rewrite the flush file every 'X' milliseconds.
 	},
-	mongo_provider: {
+	MongoProvider: {
 		enabled: false,							// enable/disable this storage provider.
 		collection_name: 'Collection-Name',		// Name of the MongoDB collection.
 		database_name: 'Database-Name',			// Name of the MongoDB database.
@@ -40,7 +40,7 @@ In either case, `WriteOne` and `DeleteOne` will return a `0`, indicating that no
 
 - The text for a thrown write permission error is: `User does not have write access to this object.`
 
-- The fields `database_name` and `collection_name` within the `json_provider` configuration block are combined
+- The fields `database_name` and `collection_name` within the `JsonProvider` configuration block are combined
 to form the filename and path of the collection's flush file.
 (e.g. `/path/to/store/collections/Collection-Name.json`)
 Take care that these fields represent a valid file system name for your operating system.
@@ -49,8 +49,8 @@ used to populate the in-memory representation of the collection.
 Use `clear_collection_on_start` to ignore this file if it already exists, always starting with an empty collection.
 Use either `flush_on_update` or `flush_every_ms` to overwrite the contents of this file when the collection changes.
 
-- If both the `json_provider` and `mongo_provider` have `enabled` fields set to `true`, then the storage will use
-the `mongo_provider` and not the `json_provider`.
+- If both the `JsonProvider` and `MongoProvider` have `enabled` fields set to `true`, then the storage will use
+the `MongoProvider` and not the `JsonProvider`.
 
 
 ## Default Configuration
@@ -75,7 +75,7 @@ This will create an in-memory storage that will be saved to the file `./things/C
 Keep in mind that the selection of `collection_name` and `database_name` must result in valid file system names for your operating system.
 ```javascript
 let storage = LIB_USER_STORAGE.NewUserStorage( {
-	json_provider: {
+	JsonProvider: {
 		enabled: true,
 		collection_name: 'Collection-Of-Things',
 		database_name: './things',

@@ -29,7 +29,7 @@ describe( `020) UserStorage Tests`,
 		let test_object_count = 1000;
 		let user_config = {
 			throws_permission_errors: false, // Disable permission errors for testing.
-			json_provider: {
+			JsonProvider: {
 				enabled: true,
 				collection_name: 'test-objects',
 				database_name: LIB_PATH.join( __dirname, '~temp' ),

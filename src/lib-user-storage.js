@@ -33,7 +33,7 @@ LIB_USER_STORAGE.DefaultConfiguration =
 			user_info_member: '__info',			// Name of the info field used in objects (e.g. thing.__info.id = '...').
 			throw_permission_errors: false,		// Throw errors when user fails to have read or write access to an object.
 			// - Json Provider Configuration -
-			json_provider: {
+			JsonProvider: {
 				enabled: false,									// enable/disable this storage provider.
 				collection_name: 'Collection-Name',				// Name of the collection. Also, name of the flush file.
 				database_name: '/path/to/store/collections',	// Path of the flush file.
@@ -42,7 +42,7 @@ LIB_USER_STORAGE.DefaultConfiguration =
 				flush_every_ms: 0,								// Continuously rewrite the flush file every 'X' milliseconds.
 			},
 			// - MongoDB Provider Configuration -
-			mongo_provider: {
+			MongoProvider: {
 				enabled: false,							// enable/disable this storage provider.
 				collection_name: 'Collection-Name',		// Name of the MongoDB collection.
 				database_name: 'Database-Name',			// Name of the MongoDB database.
@@ -103,13 +103,13 @@ LIB_USER_STORAGE.NewUserStorage =
 
 		// Get the storage provider.
 		let storage_provider = null;
-		if ( _storage_configuration.mongo_provider && _storage_configuration.mongo_provider.enabled )
+		if ( _storage_configuration.MongoProvider && _storage_configuration.MongoProvider.enabled )
 		{
-			storage_provider = LIB_MONGO_PROVIDER.NewMongoProvider( _storage_configuration.mongo_provider );
+			storage_provider = LIB_MONGO_PROVIDER.NewMongoProvider( _storage_configuration.MongoProvider );
 		}
-		else if ( _storage_configuration.json_provider && _storage_configuration.json_provider.enabled )
+		else if ( _storage_configuration.JsonProvider && _storage_configuration.JsonProvider.enabled )
 		{
-			storage_provider = LIB_JSON_PROVIDER.NewJsonProvider( _storage_configuration.json_provider );
+			storage_provider = LIB_JSON_PROVIDER.NewJsonProvider( _storage_configuration.JsonProvider );
 		}
 		else
 		{

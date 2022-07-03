@@ -12,7 +12,7 @@
 			"args": [
 				"-u",
 				"bdd",
-				"tests/021*.js",
+				"tests/*.js",
 				"--no-timeout",
 				"--slow",
 				"0",
