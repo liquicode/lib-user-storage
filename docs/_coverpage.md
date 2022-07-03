@@ -2,7 +2,7 @@
 
 ![logo](media/template-lib-banner-large.png)
 
-# lib-user-storage <small>(v0.1.1)</small>
+# lib-user-storage <small>(v0.1.2)</small>
 
 <hr>
 
