@@ -200,21 +200,34 @@ LIB_USER_STORAGE.NewUserStorage =
 
 
 		//---------------------------------------------------------------------
-		function _UserCanWrite( User, UserObject )
+		function _UserCanShare( User, UserObject )
 		{
 			_ValidateUser( User );
 			_ValidateUserObject( UserObject );
 			if ( User.user_role === 'admin' ) { return true; }
 			if ( User.user_role === 'super' ) { return true; }
-			// if ( User.user_role === 'user' ) 
-			// {
-			// 	if ( User.user_id === UserObject[ info_member ].owner_id ) { return true; }
-			// 	if ( UserObject[ info_member ].writers.includes( User.user_id ) ) { return true; }
-			// }
 			if ( User.user_id === UserObject[ _info_member ].owner_id ) { return true; }
+			return false;
+		}
+
+
+		//---------------------------------------------------------------------
+		function _UserCanWrite( User, UserObject )
+		{
+			if ( _UserCanShare( User, UserObject ) ) { return true; }
 			if ( UserObject[ _info_member ].writers.includes( User.user_id ) ) { return true; }
 			return false;
 		}
+
+
+		// //---------------------------------------------------------------------
+		// function _UserCanRead( User, UserObject )
+		// {
+		// 	if ( _UserCanWrite( User, UserObject ) ) { return true; }
+		// 	if ( UserObject[ _info_member ].readers.includes( User.user_id ) ) { return true; }
+		// 	if ( UserObject[ _info_member ].public ) { return true; }
+		// 	return false;
+		// }
 
 
 		//---------------------------------------------------------------------
@@ -319,6 +332,9 @@ LIB_USER_STORAGE.NewUserStorage =
 
 		//=====================================================================
 		// Count
+		//---------------------------------------------------------------------
+		// Returns the number of objects specified by Criteria.
+		// Only objects that permit the user read or write access are counted.
 		//=====================================================================
 
 
@@ -339,6 +355,10 @@ LIB_USER_STORAGE.NewUserStorage =
 
 		//=====================================================================
 		// FindOne
+		//---------------------------------------------------------------------
+		// Finds a single object.
+		// If multiple objects are found, then the first one is returned.
+		// Only objects that permit the user read or write access are returned.
 		//=====================================================================
 
 
@@ -361,6 +381,9 @@ LIB_USER_STORAGE.NewUserStorage =
 
 		//=====================================================================
 		// FindMany
+		//---------------------------------------------------------------------
+		// Finds a number of objects.
+		// Only objects that permit the user read or write access are returned.
 		//=====================================================================
 
 
@@ -383,6 +406,10 @@ LIB_USER_STORAGE.NewUserStorage =
 
 		//=====================================================================
 		// CreateOne
+		//---------------------------------------------------------------------
+		// Creates a single object. Values from Prototype are merged.
+		// The created object is owned by the user.
+		// Any user can call this.
 		//=====================================================================
 
 
@@ -405,6 +432,9 @@ LIB_USER_STORAGE.NewUserStorage =
 
 		//=====================================================================
 		// WriteOne
+		//---------------------------------------------------------------------
+		// Modifies a single object. Values from DataObject are merged.
+		// User must have write permissions.
 		//=====================================================================
 
 
@@ -443,6 +473,9 @@ LIB_USER_STORAGE.NewUserStorage =
 
 		//=====================================================================
 		// DeleteOne
+		//---------------------------------------------------------------------
+		// Deletes a single object.
+		// User must have write permissions.
 		//=====================================================================
 
 
@@ -474,6 +507,9 @@ LIB_USER_STORAGE.NewUserStorage =
 
 		//=====================================================================
 		// DeleteMany
+		//---------------------------------------------------------------------
+		// Deletes a number of objects.
+		// User must have write permissions.
 		//=====================================================================
 
 
@@ -505,13 +541,51 @@ LIB_USER_STORAGE.NewUserStorage =
 
 
 		//=====================================================================
-		// SetOwner
+		// _SetOwner
+		//---------------------------------------------------------------------
+		// Sets the ownership of a number of objects.
+		// This is a system level function and should not be exported.
 		//=====================================================================
 
 
-		user_storage.SetOwner =
-			async function SetOwner( User, Criteria )
+		user_storage._SetOwner =
+			async function _SetOwner( User, Criteria )
 			{
+				try
+				{
+					let criteria = _UserCriteria( User, Criteria );
+					delete criteria.$or; // We are assuming admin rights.
+					let operation_count = 0;
+					let found_objects = await storage_provider.FindMany( criteria );
+					for ( let found_object_index = 0; found_object_index < found_objects.length; found_object_index++ )
+					{
+						let found_object = found_objects[ found_object_index ];
+						found_object[ _info_member ].owner_id = User.user_id;
+						found_object[ _info_member ].updated_at = LIB_UTILS.zulu_timestamp();
+						operation_count += await storage_provider.WriteOne( found_object );
+					}
+					return operation_count;
+				}
+				catch ( error )
+				{
+					throw error;
+				}
+			};
+
+
+		//=====================================================================
+		// SetSharing
+		//---------------------------------------------------------------------
+		// Sets the sharing permissions of a number of objects.
+		// User must have sharing permissions.
+		//=====================================================================
+
+
+		user_storage.SetSharing =
+			async function SetSharing( User, Criteria, Readers, Writers, MakePublic )
+			{
+				Readers = Readers || [];
+				Writers = Writers || [];
 				try
 				{
 					let criteria = _UserCriteria( User, Criteria );
@@ -520,9 +594,14 @@ LIB_USER_STORAGE.NewUserStorage =
 					for ( let found_object_index = 0; found_object_index < found_objects.length; found_object_index++ )
 					{
 						let found_object = found_objects[ found_object_index ];
-						if ( _UserCanWrite( User, found_object ) )
+						if ( _UserCanShare( User, found_object ) )
 						{
-							found_object[ _info_member ].owner_id = User.user_id;
+							// Update the object.
+							found_object[ _info_member ].readers = Readers;
+							found_object[ _info_member ].writers = Writers;
+							found_object[ _info_member ].public = !!MakePublic;
+
+							// Write the object.
 							found_object[ _info_member ].updated_at = LIB_UTILS.zulu_timestamp();
 							operation_count += await storage_provider.WriteOne( found_object );
 						}
@@ -538,6 +617,9 @@ LIB_USER_STORAGE.NewUserStorage =
 
 		//=====================================================================
 		// Share
+		//---------------------------------------------------------------------
+		// Modifies the sharing permissions of a number of objects.
+		// User must have sharing permissions.
 		//=====================================================================
 
 
@@ -552,7 +634,7 @@ LIB_USER_STORAGE.NewUserStorage =
 					for ( let found_object_index = 0; found_object_index < found_objects.length; found_object_index++ )
 					{
 						let found_object = found_objects[ found_object_index ];
-						if ( _UserCanWrite( User, found_object ) )
+						if ( _UserCanShare( User, found_object ) )
 						{
 							// Update the object.
 							let modified = false;
@@ -616,6 +698,9 @@ LIB_USER_STORAGE.NewUserStorage =
 
 		//=====================================================================
 		// Unshare
+		//---------------------------------------------------------------------
+		// Modifies the sharing permissions of a number of objects.
+		// User must have sharing permissions.
 		//=====================================================================
 
 
@@ -630,7 +715,7 @@ LIB_USER_STORAGE.NewUserStorage =
 					for ( let found_object_index = 0; found_object_index < found_objects.length; found_object_index++ )
 					{
 						let found_object = found_objects[ found_object_index ];
-						if ( _UserCanWrite( User, found_object ) )
+						if ( _UserCanShare( User, found_object ) )
 						{
 							// Update the object.
 							let modified = false;
