@@ -7,9 +7,8 @@ The function `LIB_USER_STORAGE.NewUserStorage( Configuration )` takes a single o
 ```javascript
 let Configuration = {
 	// - User Storage Configuration -
-	user_info_member: '__info',			// Name of the info field used in objects (e.g. thing.__info.id = '...').
+	storage_info_member: '__',			// Name of the info field used in objects (e.g. thing.__.id = '...').
 	throw_permission_errors: false,		// Throw errors when user fails to have read or write access to an object.
-	// - MongoDB Provider Configuration -
 	// - Json Provider Configuration -
 	JsonProvider: {
 		enabled: false,									// enable/disable this storage provider.
@@ -19,6 +18,7 @@ let Configuration = {
 		flush_on_update: false,							// Rewrite the flush file after each change (create, update, delete).
 		flush_every_ms: 0,								// Continuously rewrite the flush file every 'X' milliseconds.
 	},
+	// - MongoDB Provider Configuration -
 	MongoProvider: {
 		enabled: false,							// enable/disable this storage provider.
 		collection_name: 'Collection-Name',		// Name of the MongoDB collection.
@@ -55,10 +55,11 @@ the `MongoProvider` and not the `JsonProvider`.
 
 ## Default Configuration
 
-If a configuration object is not provided, or is partially provided, then default configuration values will bw used.
+If no configuration object is provided by the application (or partially provided), then default configuration values will be used.
 You can call `LIB_USER_STORAGE.DefaultConfiguration()` to obtain the default configuration values.
 These values can be modified and then passed on to the `NewUserStorage` function.
 If a partial configuration object is passed, then missing values will be taken from the defaults.
+In other words, any configuration object passed to `NewUserStorage( config )` will be merged with and will override any default values.
 
 
 ## Examples
@@ -92,7 +93,7 @@ let storage = LIB_USER_STORAGE.NewUserStorage( {
 		enabled: true,
 		collection_name: 'Collection-Of-Things',
 		database_name: 'things',
-		connection_string: 'mongodb://username:password@server-address',
+		connection_string: 'mongodb://my-username:my-password@my-server-address',
 	} } );
 let thing = storage.CreateOne( /* parameters here */ );
 ```

@@ -1,3 +1,4 @@
+
 # Object Sharing Example
 
 Create a collection of objects owned by different users
@@ -8,7 +9,7 @@ Each user has documents that are private to them.
 These documents can be made `public` (read-only to all) and/or can be shared with specific users
 who are given read-only or read-write access to specific documents.
 
-Alice's `User` object has the `admin` role, which allows her to read and write the documents of all users.
+Alice's user object has the `admin` role, which allows her to read and write the documents of all users.
 She creates three documents.
 One document is marked as `public` that will be readable by all users.
 She also has a document to which Bob is a `Writer` (has read/write access) and Eve is a `Reader` (has read-only access).
@@ -55,21 +56,21 @@ Users can manipulate objects that they own
 
 Users have access to the documents they create.
 When reading objects from `UserStorage`, an object will be returned which
-will have a `__info` field containing the object's management state.
+will have a `__` field containing the object's management state.
 
-It is not advisable to modify the contents of the `__info` field.
-If the name of the `__info` field collides with another field you need,
-then you can change it in the configuration element `user_info_member`.
+It is not advisable to modify the contents of the `__` field.
+If the name of the `__` field collides with another field you need,
+then you can change it in the configuration element `storage_info_member`.
 
 
 ```javascript
 // Alice can read and write her own documents.
 doc = await storage.FindOne( Alice, { name: 'Public Document' } );
-// doc.__info.id = "f02ca9..."
-// doc.__info.owner_id = "alice@fake.com"
-// doc.__info.readers = []
-// doc.__info.writers = []
-// doc.__info.public = true
+// doc.__.id = "f02ca9..."
+// doc.__.owner_id = "alice@fake.com"
+// doc.__.readers = []
+// doc.__.writers = []
+// doc.__.public = true
 doc.text = 'Updated document content.';
 count = await storage.WriteOne( Alice, doc );
 // count = 1, if successful.

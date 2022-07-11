@@ -9,7 +9,7 @@ A storage engine for user objects. Tracks object identity, ownership, and permis
                                                                                       ==> +--------------------------+
                                                                                      /    | Reads and writes objects |
 +-----------------+      +------------------------+      +--------------------+     /     | to a MongoDB instance.   |
-|   Application   |      |      UserObject        |      |    UserStorage     |    /      +--------------------------+
+|   Application   |      |     StorageObject      |      |    UserStorage     |    /      +--------------------------+
 +-----------------+ <==> +------------------------+ <==> +--------------------+ <==      
 | Works with user |      | Combines user identity |      | Controls access    |    \     
 | owned objects.  |      | with object identity.  |      | by user identity.  |     \     +--------------------------+
@@ -30,16 +30,16 @@ Overview
 One of the primary and initial challenges of developing a user-facing system is that of implementating a
 storage mechanism which promotes the concept of user owned data.
 This can be privata data such as documents and images.
-This can also refer to data which is attributed to the user such as a blog post or comment.
+This can also refer to data which is authored or attributed to the user such as a blog post or comment.
 
-Furthermore, it is a growing expectation among application users to not only be able to maintain private
-data (or data attributed to them), but also to be able to share that data with other users of the same application.
+It is also a growing expectation among application users to be able to maintain private data (or data attributed to them),
+in addition to being able to share that data with other users within the same application.
 
 This library offers a way for NodeJS applications to implement storage strategies which promote user ownership
-and the sharing of stored data.
+and the sharing of that data amongst other users of the same system.
 
-This library does not provide an authentication mechanism.
-It assumes, by the time you are calling its functions, that you have already affirmed the identity of the user.
+This library does not provide any authentication mechanism.
+It assumes that, by the time its functions are being called, the application has already confirmed the identity of the user.
 
 
 Getting Started
@@ -52,7 +52,23 @@ npm install @liquicode/lib-user-storage
 
 Include the library in your source code:
 ```javascript
-const Lib = require( '@liquicode/lib-user-storage' );
+const LIB_USER_STORAGE = require( '@liquicode/lib-user-storage' );
+```
+
+Create a new storage service:
+```javascript
+let storage = LIB_USER_STORAGE.NewUserStorage(); // Defaults to an in-memory json array.
+```
+
+Store objects:
+```javascript
+let Bob = { user_id: 'bob@fake.com', user_role: 'user' };
+new_doc = await storage.CreateOne( Bob, { name: 'About Me', text: 'I am a system user!' } );
+```
+
+Share objects:
+```javascript
+await storage.Share( Bob, new_doc, null, null, true ); // Make public, share with everyone.
 ```
 
 
@@ -109,7 +125,7 @@ the stored representation (and the object returned to you) will look something l
 ```javascript
 thing = {
 	foo: 'bar',
-	__info: {
+	__: {	// Every stored object contains special info in its '__' field.
 		id = 'cda0f50e-84b4-4a4e-91f5-29f73a00ffbb',	// unique id for this object.
 		created_at: '2022-06-30T03:45:24.415Z',			// Timestamp of when this object was created.
 		updated_at: '2022-06-30T03:45:24.415Z',			// Timestamp of when this object was last updated.
@@ -120,6 +136,16 @@ thing = {
 	}
 }
 ```
+
+The library tracks and manages object identity, ownership information, sharing permissions, and modification timestamps
+for each object residing in storage.
+This information allows the library to control, via library function calls, which objects are available to the users
+calling the functions.
+
+The library performs an authorization function allowing your application to easily allow users to have "ownership"
+of their application data and to be able to share it to other users in the system.
+Note that it is the responsibility of the larger application to ensure that the proper credentials are examined
+and that a user is whom s/he claims to be.
 
 
 API Summary
@@ -136,109 +162,62 @@ const LIB_USER_STORAGE = require( '@liquicode/lib-user-storage' );
 ```
 
 ### Library Functions
-These function are available from the library root (e.g. `LIB_USER_STORAGE`):
+These function are available from the library itself (e.g. `LIB_USER_STORAGE`):
 
-- `DefaultConfiguration ( )`
-	: Returns a default storage configuration object.
+- `DefaultConfiguration ()`
+	: Returns a default user storage configuration object.
 
 - `NewUserStorage ( Configuration )`
 	: Returns a `UserStorage` object that exports the rest of the functions below.
+	-  See the [Configuration](guides/Configuration.md) topic for a more information
+		on configuration and using storage providers.
 
-### Utility Functions
+- `StorageAdministrator ()`
+	: Returns a user object having the 'admin' user role.
+	(alias: `Administrator()`)
 
-- `NewUserObject ( Owner, Prototype )`
-	: Returns a new `UserObject` containing the values of `Prototype` and a complete user info portion.
-	As specified by the `user_info_member` configuration setting (defaults to `__info`).
+- `StorageSupervisor ()`
+	: Returns a user object having the 'super' user role.
+	(alias: `Supervisor()`)
 
-- `GetUserInfo ( DataObject )`
-	: Returns the user info portion of the object.
-	As specified by the `user_info_member` configuration setting (defaults to `__info`).
 
-- `GetUserData ( DataObject )`
-	: Returns the object data minus the user info portion of the object.
-	As specified by the `user_info_member` configuration setting (defaults to `__info`).
+### UserStorage Functions
 
-### Discovery Functions
+See the [UserStorage](guides/UserStorage.md) topic for a more in-depth discussion of `UserStorage`
+behaviors and functions.
 
-- `Count ( User, Criteria )`
-	: Returns the number of objects available to `User` as specified by `Criteria`.
+- Utility Functions
+	- NewStorageObject	( Owner, Prototype )
+	- GetStorageInfo	( StorageObject )
+	- GetStorageData	( StorageObject )
+	- UserCanShare		( User, StorageObject )
+	- UserCanWrite		( User, StorageObject )
+	- UserCanRead		( User, StorageObject )
 
-- `FindOne ( User, Criteria )`
-	: Returns a single object as specified by `Criteria`.
+- Discovery Functions
+	- Count				( User, Criteria )
+	- FindOne			( User, Criteria )
+	- FindMany			( User, Criteria )
 
-- `FindMany ( User, Criteria )`
-	: Returns an array of objects as specified by `Criteria`.
+- Manipulation Functions
+	- CreateOne			( User, Prototype )
+	- WriteOne			( User, UserObject )
+	- DeleteOne			( User, Criteria )
+	- DeleteMany		( User, Criteria )
 
-### Manipulation Functions
-
-- `CreateOne ( User, Prototype )`
-	: Creates a new object in the collection that is owned by `User`.
-
-- `WriteOne ( User, Criteria, DataObject )`
-	: Replaces a single object in the collection.
-
-- `DeleteOne ( User, Criteria )`
-	: Deletes a single object in the collection.
-
-- `DeleteMany ( User, Criteria )`
-	: Deletes multiple objects in the collection.
-
-### Permissions Functions
-
-- `SetOwner ( User, OwnerID, Criteria )`
-	: Sets `OwnerID` as the owner of the objects specified by `Criteria`.
-	Only users with a `user_role` of `'admin'` or `'super'` can call this function.
-
-- `Share ( User, Criteria, Readers, Writers, MakePublic )`
-	: Shares objects to other users.
-	`Readers` is a string or array of strings, containing the `user_id`s of the users that can read these objects.
-	The readers list is updated and not overwritten.
-	Every `user_id` provided will be added to from the readers list.
-	`Writers` is a string or array of strings, containing the `user_id`s of the users that can write these objects.
-	The writers list is updated and not overwritten.
-	Every `user_id` provided will be added to from the writers list.
-	`MakePublic` is an optional boolean value.
-	If a boolean value is provided it will mark the matched objects as public or not public accordingly.
-
-- `Unshare ( User, Criteria, NotReaders, NotWriters, MakeUnpublic )`
-	: Unshares objects from other users.
-	`NotReaders` is a string or array of strings, containing the `user_id`s of the users that cannnot read these objects.
-	The readers list is updated and not overwritten.
-	Every `user_id` provided will be removed from the readers list.
-	`Writers` is a string or array of strings, containing the `user_id`s of the users that cannot write these objects.
-	The writers list is updated and not overwritten.
-	Every `user_id` provided will be removed from the writers list.
-	`MakeUnpublic` is an optional boolean value.
-	If a boolean value is provided it will unmark the matched objects as public or not public accordingly.
-
-### Common Function Parameters
-
-- `User`
-	: A json object containing values for the fields `user_id` and `user_role`.
-
-- `Criteria` can be one of:
-	- If missing/undefined, `null`, or empty `{}`, then all objects are matched.
-	- A regular json object whose values are matched against the objects in storage.
-		This is a MongoDB-like object query to specify one or more objects.
-		See [json-criteria](guides/json-criteria.md) for more information.
-	- A string representing the value of the user info `id` field to match in storage.
-	- A user object with or without a user info portion of the object.
-		If user info is present, then the value of user info `id` field will be matched.
-		If user info is missing, then the object will be matched as a regular json object.
-
-- The `DataObject` parameter in the `WriteOne` function can be:
-	- A user object with or without a user info portion of the object.
-		If user info is present, it is ignored during any updates.
-	- A json object that will be used to overwrite data fields of the matched stored object.
+- Sharing Functions
+	- SetOwner			( User, OwnerID, Criteria )
+	- SetSharing		( User, Criteria, Readers, Writers, MakePublic )
+	- Share				( User, Reader, Writer, Criteria )
+	- Unshare			( User, Reader, Writer, Criteria )
 
 
 Notices
 ---------------------------------------------------------------------
 
-- Dedicated to my family, without whom, this work would not be possible.
-- Source code ASCII art banners generated using [https://patorjk.com/software/taag](https://patorjk.com/software/taag/#p=display&f=Univers) with the "Univers" font.
 - The `JsonProvider` implementation in this library was inspired in part by the project [jsondbfs](https://github.com/mcmartins/jsondbfs).
 - The `JsonProvider` implementation in this library was inspired in part by the project [NeDB](https://github.com/louischatriot/nedb).
+- In dedication to my family, without whom, this work would not be possible.
 
 
 ### Dependencies

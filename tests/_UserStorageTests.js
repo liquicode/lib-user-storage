@@ -26,9 +26,9 @@ exports.CreateTestObjects =
 			{
 				console.error( error );
 			}
-			let user_info = Storage.GetUserInfo( new_data_object );
+			let user_info = Storage.GetStorageInfo( new_data_object );
 			LIB_ASSERT.ok( user_info.id );
-			let user_data = Storage.GetUserData( new_data_object );
+			let user_data = Storage.GetStorageData( new_data_object );
 			LIB_ASSERT.deepStrictEqual( user_data, data_object );
 		}
 
@@ -71,9 +71,9 @@ exports.ReadAndWriteTestObjects =
 			{
 				console.error( error );
 			}
-			let user_info = Storage.GetUserInfo( new_data_object );
+			let user_info = Storage.GetStorageInfo( new_data_object );
 			LIB_ASSERT.ok( user_info.id );
-			let user_data = Storage.GetUserData( new_data_object );
+			let user_data = Storage.GetStorageData( new_data_object );
 			LIB_ASSERT.deepStrictEqual( user_data, data_object );
 
 			// Modify the object.
@@ -100,9 +100,9 @@ exports.ReadAndWriteTestObjects =
 				console.error( error );
 			}
 			LIB_ASSERT.ok( new_data_object );
-			user_info = Storage.GetUserInfo( new_data_object );
+			user_info = Storage.GetStorageInfo( new_data_object );
 			LIB_ASSERT.ok( user_info.id );
-			user_data = Storage.GetUserData( new_data_object );
+			user_data = Storage.GetStorageData( new_data_object );
 			LIB_ASSERT.deepStrictEqual( user_data, data_object );
 
 		}

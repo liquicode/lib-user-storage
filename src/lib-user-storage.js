@@ -30,7 +30,7 @@ LIB_USER_STORAGE.DefaultConfiguration =
 	{
 		return {
 			// - User Storage Configuration -
-			user_info_member: '__',				// Name of the info field used in objects (e.g. thing.__info.id = '...').
+			storage_info_member: '__',			// Name of the info field used in objects (e.g. thing.__.id = '...').
 			throw_permission_errors: false,		// Throw errors when user fails to have read or write access to an object.
 			// - Json Provider Configuration -
 			JsonProvider: {
@@ -63,11 +63,12 @@ LIB_USER_STORAGE.StorageAdministrator =
 	{
 		return {
 			name: 'Storage Administrator',
-			user_id: 'admin@storage',
+			user_id: 'admin@lib-user-storage',
 			user_role: 'admin',
 		};
 	};
 exports.StorageAdministrator = LIB_USER_STORAGE.StorageAdministrator;
+exports.Administrator = LIB_USER_STORAGE.StorageAdministrator;
 
 
 LIB_USER_STORAGE.StorageSupervisor =
@@ -75,11 +76,12 @@ LIB_USER_STORAGE.StorageSupervisor =
 	{
 		return {
 			name: 'Storage Supervisor',
-			user_id: 'super@storage',
+			user_id: 'super@lib-user-storage',
 			user_role: 'super',
 		};
 	};
 exports.StorageSupervisor = LIB_USER_STORAGE.StorageSupervisor;
+exports.Supervisor = LIB_USER_STORAGE.StorageSupervisor;
 
 
 //=====================================================================
@@ -118,11 +120,11 @@ LIB_USER_STORAGE.NewUserStorage =
 
 
 		// Configuration shortcuts.
-		let _info_member = _storage_configuration.user_info_member;
+		let _storage_info_member = _storage_configuration.storage_info_member;
 
 
 		//=====================================================================
-		// Storage Interface
+		// Provate Functions
 		//=====================================================================
 
 
@@ -138,30 +140,30 @@ LIB_USER_STORAGE.NewUserStorage =
 
 
 		//---------------------------------------------------------------------
-		function _ValidateUserObject( UserObject )
+		function _ValidateStorageObject( StorageObject )
 		{
-			if ( LIB_UTILS.value_missing_null_empty( UserObject ) ) { throw LIB_UTILS.MISSING_PARAMETER_ERROR( 'UserObject' ); }
-			if ( LIB_UTILS.value_missing_null_empty( UserObject[ _info_member ] ) ) { throw LIB_UTILS.MISSING_PARAMETER_ERROR( 'UserObject[ info_member ]' ); }
-			if ( LIB_UTILS.value_missing_null_empty( UserObject[ _info_member ].id ) ) { throw LIB_UTILS.MISSING_PARAMETER_ERROR( 'UserObject[ info_member ].id' ); }
-			if ( LIB_UTILS.value_missing_null_empty( UserObject[ _info_member ].owner_id ) ) { throw LIB_UTILS.MISSING_PARAMETER_ERROR( 'UserObject[ info_member ].owner_id' ); }
-			if ( LIB_UTILS.value_missing( UserObject[ _info_member ].readers ) ) { throw LIB_UTILS.MISSING_PARAMETER_ERROR( 'UserObject[ info_member ].readers' ); }
-			if ( LIB_UTILS.value_missing( UserObject[ _info_member ].writers ) ) { throw LIB_UTILS.MISSING_PARAMETER_ERROR( 'UserObject[ info_member ].writers' ); }
-			if ( LIB_UTILS.value_missing( UserObject[ _info_member ].public ) ) { throw LIB_UTILS.MISSING_PARAMETER_ERROR( 'UserObject[ info_member ].public' ); }
+			if ( LIB_UTILS.value_missing_null_empty( StorageObject ) ) { throw LIB_UTILS.MISSING_PARAMETER_ERROR( 'UserObject' ); }
+			if ( LIB_UTILS.value_missing_null_empty( StorageObject[ _storage_info_member ] ) ) { throw LIB_UTILS.MISSING_PARAMETER_ERROR( 'UserObject[ info_member ]' ); }
+			if ( LIB_UTILS.value_missing_null_empty( StorageObject[ _storage_info_member ].id ) ) { throw LIB_UTILS.MISSING_PARAMETER_ERROR( 'UserObject[ info_member ].id' ); }
+			if ( LIB_UTILS.value_missing_null_empty( StorageObject[ _storage_info_member ].owner_id ) ) { throw LIB_UTILS.MISSING_PARAMETER_ERROR( 'UserObject[ info_member ].owner_id' ); }
+			if ( LIB_UTILS.value_missing( StorageObject[ _storage_info_member ].readers ) ) { throw LIB_UTILS.MISSING_PARAMETER_ERROR( 'UserObject[ info_member ].readers' ); }
+			if ( LIB_UTILS.value_missing( StorageObject[ _storage_info_member ].writers ) ) { throw LIB_UTILS.MISSING_PARAMETER_ERROR( 'UserObject[ info_member ].writers' ); }
+			if ( LIB_UTILS.value_missing( StorageObject[ _storage_info_member ].public ) ) { throw LIB_UTILS.MISSING_PARAMETER_ERROR( 'UserObject[ info_member ].public' ); }
 			return;
 		}
 
 
 		//---------------------------------------------------------------------
-		user_storage.NewUserObject =
-			function NewUserObject( Owner, Prototype ) 
+		user_storage.NewStorageObject =
+			function NewStorageObject( Owner, Prototype ) 
 			{
 				if ( !LIB_UTILS.value_exists( Owner ) ) { throw LIB_UTILS.MISSING_PARAMETER_ERROR( 'Owner' ); }
 				if ( !LIB_UTILS.value_exists( Owner.user_id ) ) { throw LIB_UTILS.MISSING_PARAMETER_ERROR( 'Owner.user_id' ); }
 
 				// Create a new user object.
 				let user_object = LIB_UTILS.clone( Prototype );
-				delete user_object[ _info_member ];
-				user_object[ _info_member ] = {
+				delete user_object[ _storage_info_member ];
+				user_object[ _storage_info_member ] = {
 					id: LIB_UUID.v4(),
 					created_at: LIB_UTILS.zulu_timestamp(),
 					updated_at: LIB_UTILS.zulu_timestamp(),
@@ -177,57 +179,60 @@ LIB_USER_STORAGE.NewUserStorage =
 
 
 		//---------------------------------------------------------------------
-		user_storage.GetUserData =
-			function GetUserData( DataObject ) 
+		user_storage.GetStorageData =
+			function GetStorageData( StorageObject ) 
 			{
-				let user_data = LIB_UTILS.clone( DataObject );
-				delete user_data[ _info_member ];
+				let user_data = LIB_UTILS.clone( StorageObject );
+				delete user_data[ _storage_info_member ];
 				return user_data;
 			};
 
 
 		//---------------------------------------------------------------------
-		user_storage.GetUserInfo =
-			function GetUserData( DataObject ) 
+		user_storage.GetStorageInfo =
+			function GetStorageInfo( StorageObject ) 
 			{
 				let user_info = {};
-				if ( typeof DataObject[ _info_member ] === 'object' ) 
+				if ( typeof StorageObject[ _storage_info_member ] === 'object' ) 
 				{
-					user_info = LIB_UTILS.clone( DataObject[ _info_member ] );
+					user_info = LIB_UTILS.clone( StorageObject[ _storage_info_member ] );
 				}
 				return user_info;
 			};
 
 
 		//---------------------------------------------------------------------
-		function _UserCanShare( User, UserObject )
-		{
-			_ValidateUser( User );
-			_ValidateUserObject( UserObject );
-			if ( User.user_role === 'admin' ) { return true; }
-			if ( User.user_role === 'super' ) { return true; }
-			if ( User.user_id === UserObject[ _info_member ].owner_id ) { return true; }
-			return false;
-		}
+		user_storage.UserCanShare =
+			function UserCanShare( User, StorageObject )
+			{
+				_ValidateUser( User );
+				_ValidateStorageObject( StorageObject );
+				if ( User.user_role === 'admin' ) { return true; }
+				if ( User.user_role === 'super' ) { return true; }
+				if ( User.user_id === StorageObject[ _storage_info_member ].owner_id ) { return true; }
+				return false;
+			};
 
 
 		//---------------------------------------------------------------------
-		function _UserCanWrite( User, UserObject )
-		{
-			if ( _UserCanShare( User, UserObject ) ) { return true; }
-			if ( UserObject[ _info_member ].writers.includes( User.user_id ) ) { return true; }
-			return false;
-		}
+		user_storage.UserCanWrite =
+			function UserCanWrite( User, StorageObject )
+			{
+				if ( user_storage.UserCanShare( User, StorageObject ) ) { return true; }
+				if ( StorageObject[ _storage_info_member ].writers.includes( User.user_id ) ) { return true; }
+				return false;
+			};
 
 
-		// //---------------------------------------------------------------------
-		// function _UserCanRead( User, UserObject )
-		// {
-		// 	if ( _UserCanWrite( User, UserObject ) ) { return true; }
-		// 	if ( UserObject[ _info_member ].readers.includes( User.user_id ) ) { return true; }
-		// 	if ( UserObject[ _info_member ].public ) { return true; }
-		// 	return false;
-		// }
+		//---------------------------------------------------------------------
+		user_storage.UserCanRead =
+			function UserCanRead( User, StorageObject )
+			{
+				if ( user_storage.UserCanWrite( User, StorageObject ) ) { return true; }
+				if ( StorageObject[ _storage_info_member ].readers.includes( User.user_id ) ) { return true; }
+				if ( StorageObject[ _storage_info_member ].public ) { return true; }
+				return false;
+			};
 
 
 		//---------------------------------------------------------------------
@@ -245,7 +250,7 @@ LIB_USER_STORAGE.NewUserStorage =
 			}
 			else if ( object_type === 'string' )
 			{
-				criteria[ _info_member ] = { id: ObjectOrID }; // Match a single, specific object.
+				criteria[ _storage_info_member ] = { id: ObjectOrID }; // Match a single, specific object.
 			}
 			else if ( object_type === 'object' )
 			{
@@ -255,14 +260,14 @@ LIB_USER_STORAGE.NewUserStorage =
 				}
 				else
 				{
-					let user_info = user_storage.GetUserInfo( ObjectOrID );
+					let user_info = user_storage.GetStorageInfo( ObjectOrID );
 					if ( !LIB_UTILS.value_missing_null_empty( user_info.id ) )
 					{
-						criteria[ _info_member ] = { id: user_info.id }; // Match a single, specific object.
+						criteria[ _storage_info_member ] = { id: user_info.id }; // Match a single, specific object.
 					}
 					else
 					{
-						criteria = user_storage.GetUserData( ObjectOrID ); // match the provided object.
+						criteria = user_storage.GetStorageData( ObjectOrID ); // match the provided object.
 						// if ( !LIB_UTILS.value_missing_null_empty( ObjectOrID._o ) )
 						// {
 						// 	criteria._o = LIB_UTILS.clone( ObjectOrID._o ); // match _o with the proviuded values.
@@ -295,25 +300,25 @@ LIB_USER_STORAGE.NewUserStorage =
 				{
 					// Return objects owned by this user.
 					let info_test = {};
-					info_test[ _info_member + '.owner_id' ] = User.user_id;
+					info_test[ _storage_info_member + '.owner_id' ] = User.user_id;
 					criteria.$or.push( info_test );
 				}
 				{
 					// Return objects shared to this user.
 					let info_test = {};
-					info_test[ _info_member + '.readers' ] = { $in: User.user_id };
+					info_test[ _storage_info_member + '.readers' ] = { $in: User.user_id };
 					criteria.$or.push( info_test );
 				}
 				{
 					// Return objects shared to this user.
 					let info_test = {};
-					info_test[ _info_member + '.writers' ] = { $in: User.user_id };
+					info_test[ _storage_info_member + '.writers' ] = { $in: User.user_id };
 					criteria.$or.push( info_test );
 				}
 				{
 					// Return public objects.
 					let info_test = {};
-					info_test[ _info_member + '.public' ] = true;
+					info_test[ _storage_info_member + '.public' ] = true;
 					criteria.$or.push( info_test );
 				}
 				// let owner_id_member = _info_member + '.owner_id';
@@ -418,7 +423,7 @@ LIB_USER_STORAGE.NewUserStorage =
 			{
 				try
 				{
-					let user_object = user_storage.NewUserObject( User, Prototype );
+					let user_object = user_storage.NewStorageObject( User, Prototype );
 					let object = await storage_provider.CreateOne( user_object );
 					if ( object ) { delete object._id; }
 					return object;
@@ -450,7 +455,7 @@ LIB_USER_STORAGE.NewUserStorage =
 						if ( _storage_configuration.throw_permission_errors ) { throw LIB_UTILS.READ_ACCESS_ERROR(); }
 						else { return 0; }
 					}
-					if ( !_UserCanWrite( User, found_object ) ) 
+					if ( !user_storage.UserCanWrite( User, found_object ) ) 
 					{
 						if ( _storage_configuration.throw_permission_errors ) { throw LIB_UTILS.WRITE_ACCESS_ERROR(); }
 						else { return 0; }
@@ -459,7 +464,7 @@ LIB_USER_STORAGE.NewUserStorage =
 					// {
 					// 	DataObject = DataObject._o;
 					// }
-					found_object[ _info_member ].updated_at = LIB_UTILS.zulu_timestamp();
+					found_object[ _storage_info_member ].updated_at = LIB_UTILS.zulu_timestamp();
 					// found_object._o = LIB_UTILS.merge_objects( found_object._o, DataObject );
 					found_object = LIB_UTILS.merge_objects( found_object, DataObject );
 					return await storage_provider.WriteOne( found_object );
@@ -491,7 +496,7 @@ LIB_USER_STORAGE.NewUserStorage =
 						if ( _storage_configuration.throw_permission_errors ) { throw LIB_UTILS.READ_ACCESS_ERROR(); }
 						else { return 0; }
 					}
-					if ( !_UserCanWrite( User, found_object ) ) 
+					if ( !user_storage.UserCanWrite( User, found_object ) ) 
 					{
 						if ( _storage_configuration.throw_permission_errors ) { throw LIB_UTILS.WRITE_ACCESS_ERROR(); }
 						else { return 0; }
@@ -524,7 +529,7 @@ LIB_USER_STORAGE.NewUserStorage =
 					for ( let found_object_index = 0; found_object_index < found_objects.length; found_object_index++ )
 					{
 						let found_object = found_objects[ found_object_index ];
-						if ( _UserCanWrite( User, found_object ) )
+						if ( user_storage.UserCanWrite( User, found_object ) )
 						{
 							let count = await storage_provider.DeleteOne( _UserCriteria( User, found_object ) );
 							if ( !count ) { throw new Error( `There was an unexpected problem deleting the object.` ); }
@@ -544,25 +549,29 @@ LIB_USER_STORAGE.NewUserStorage =
 		// _SetOwner
 		//---------------------------------------------------------------------
 		// Sets the ownership of a number of objects.
-		// This is a system level function and should not be exported.
+		// User must be an admin, a super or be the owner of the object.
 		//=====================================================================
 
 
-		user_storage._SetOwner =
-			async function _SetOwner( User, Criteria )
+		user_storage.SetOwner =
+			async function SetOwner( User, OwnerID, Criteria )
 			{
 				try
 				{
 					let criteria = _UserCriteria( User, Criteria );
-					delete criteria.$or; // We are assuming admin rights.
 					let operation_count = 0;
 					let found_objects = await storage_provider.FindMany( criteria );
 					for ( let found_object_index = 0; found_object_index < found_objects.length; found_object_index++ )
 					{
 						let found_object = found_objects[ found_object_index ];
-						found_object[ _info_member ].owner_id = User.user_id;
-						found_object[ _info_member ].updated_at = LIB_UTILS.zulu_timestamp();
-						operation_count += await storage_provider.WriteOne( found_object );
+						if ( user_storage.UserCanShare( User, found_object ) )
+						{
+							// Set the new owner.
+							found_object[ _storage_info_member ].owner_id = OwnerID;
+							found_object[ _storage_info_member ].updated_at = LIB_UTILS.zulu_timestamp();
+							// Update the object.
+							operation_count += await storage_provider.WriteOne( found_object );
+						}
 					}
 					return operation_count;
 				}
@@ -594,15 +603,15 @@ LIB_USER_STORAGE.NewUserStorage =
 					for ( let found_object_index = 0; found_object_index < found_objects.length; found_object_index++ )
 					{
 						let found_object = found_objects[ found_object_index ];
-						if ( _UserCanShare( User, found_object ) )
+						if ( user_storage.UserCanShare( User, found_object ) )
 						{
 							// Update the object.
-							found_object[ _info_member ].readers = Readers;
-							found_object[ _info_member ].writers = Writers;
-							found_object[ _info_member ].public = !!MakePublic;
+							found_object[ _storage_info_member ].readers = Readers;
+							found_object[ _storage_info_member ].writers = Writers;
+							found_object[ _storage_info_member ].public = !!MakePublic;
 
 							// Write the object.
-							found_object[ _info_member ].updated_at = LIB_UTILS.zulu_timestamp();
+							found_object[ _storage_info_member ].updated_at = LIB_UTILS.zulu_timestamp();
 							operation_count += await storage_provider.WriteOne( found_object );
 						}
 					}
@@ -634,7 +643,7 @@ LIB_USER_STORAGE.NewUserStorage =
 					for ( let found_object_index = 0; found_object_index < found_objects.length; found_object_index++ )
 					{
 						let found_object = found_objects[ found_object_index ];
-						if ( _UserCanShare( User, found_object ) )
+						if ( user_storage.UserCanShare( User, found_object ) )
 						{
 							// Update the object.
 							let modified = false;
@@ -647,9 +656,9 @@ LIB_USER_STORAGE.NewUserStorage =
 								readers.forEach(
 									element =>
 									{
-										if ( !found_object[ _info_member ].readers.includes( element ) )
+										if ( !found_object[ _storage_info_member ].readers.includes( element ) )
 										{
-											found_object[ _info_member ].readers.push( element );
+											found_object[ _storage_info_member ].readers.push( element );
 											modified = true;
 										}
 									} );
@@ -663,18 +672,18 @@ LIB_USER_STORAGE.NewUserStorage =
 								writers.forEach(
 									element =>
 									{
-										if ( !found_object[ _info_member ].writers.includes( element ) )
+										if ( !found_object[ _storage_info_member ].writers.includes( element ) )
 										{
-											found_object[ _info_member ].writers.push( element );
+											found_object[ _storage_info_member ].writers.push( element );
 											modified = true;
 										}
 									} );
 							}
 							if ( !LIB_UTILS.value_missing_null_empty( MakePublic ) && MakePublic )
 							{
-								if ( !found_object[ _info_member ].public )
+								if ( !found_object[ _storage_info_member ].public )
 								{
-									found_object[ _info_member ].public = true;
+									found_object[ _storage_info_member ].public = true;
 									modified = true;
 								}
 							}
@@ -682,7 +691,7 @@ LIB_USER_STORAGE.NewUserStorage =
 							// Write the object.
 							if ( modified )
 							{
-								found_object[ _info_member ].updated_at = LIB_UTILS.zulu_timestamp();
+								found_object[ _storage_info_member ].updated_at = LIB_UTILS.zulu_timestamp();
 								operation_count += await storage_provider.WriteOne( found_object );
 							}
 						}
@@ -715,7 +724,7 @@ LIB_USER_STORAGE.NewUserStorage =
 					for ( let found_object_index = 0; found_object_index < found_objects.length; found_object_index++ )
 					{
 						let found_object = found_objects[ found_object_index ];
-						if ( _UserCanShare( User, found_object ) )
+						if ( user_storage.UserCanShare( User, found_object ) )
 						{
 							// Update the object.
 							let modified = false;
@@ -728,10 +737,10 @@ LIB_USER_STORAGE.NewUserStorage =
 								not_readers.forEach(
 									element =>
 									{
-										let index = found_object[ _info_member ].readers.indexOf( element );
+										let index = found_object[ _storage_info_member ].readers.indexOf( element );
 										if ( index >= 0 )
 										{
-											found_object[ _info_member ].readers.slice( index, 1 );
+											found_object[ _storage_info_member ].readers.slice( index, 1 );
 											modified = true;
 										}
 									} );
@@ -745,19 +754,19 @@ LIB_USER_STORAGE.NewUserStorage =
 								not_writers.forEach(
 									element =>
 									{
-										let index = found_object[ _info_member ].writers.indexOf( element );
+										let index = found_object[ _storage_info_member ].writers.indexOf( element );
 										if ( index >= 0 )
 										{
-											found_object[ _info_member ].writers.slice( index, 1 );
+											found_object[ _storage_info_member ].writers.slice( index, 1 );
 											modified = true;
 										}
 									} );
 							}
 							if ( !LIB_UTILS.value_missing_null_empty( MakeNotPublic ) && MakeNotPublic )
 							{
-								if ( found_object[ _info_member ].public )
+								if ( found_object[ _storage_info_member ].public )
 								{
-									found_object[ _info_member ].public = false;
+									found_object[ _storage_info_member ].public = false;
 									modified = true;
 								}
 							}
@@ -765,7 +774,7 @@ LIB_USER_STORAGE.NewUserStorage =
 							// Write the object.
 							if ( modified )
 							{
-								found_object[ _info_member ].updated_at = LIB_UTILS.zulu_timestamp();
+								found_object[ _storage_info_member ].updated_at = LIB_UTILS.zulu_timestamp();
 								operation_count += await storage_provider.WriteOne( found_object );
 							}
 						}

@@ -5,7 +5,6 @@
 - lib-user-storage Docs
 
 	- [About](external/readme.md)
-	- [API](api/api.md)
 
 <hr>
 
@@ -13,8 +12,8 @@
 
 	- [Configuration](guides/Configuration.md)
 	- [Criteria](guides/Criteria.md)
-	- [User Object](guides/UserObject.md)
-	- [User Storage](guides/UserStorage.md)
+	- [StorageObject](guides/StorageObject.md)
+	- [UserStorage](guides/UserStorage.md)
 	- [Storage Providers](guides/StorageProviders.md)
 
 <hr>
