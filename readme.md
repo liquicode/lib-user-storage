@@ -115,7 +115,7 @@ How It Works
 ---------------------------------------------------------------------
 
 When storing user data to a backend storage device (e.g. MongoDB, JSON files) this library appends and maintains
-a special "info" field to each stored object. The name of this "info" field is configurable and defaults to `__info`.
+a special "info" field to each stored object. The name of this "info" field is configurable and defaults to `__`.
 
 For example, when you store a simple object such as:
 ```javascript
