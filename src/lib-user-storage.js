@@ -30,7 +30,7 @@ LIB_USER_STORAGE.DefaultConfiguration =
 	{
 		return {
 			// - User Storage Configuration -
-			user_info_member: '__info',			// Name of the info field used in objects (e.g. thing.__info.id = '...').
+			user_info_member: '__',				// Name of the info field used in objects (e.g. thing.__info.id = '...').
 			throw_permission_errors: false,		// Throw errors when user fails to have read or write access to an object.
 			// - Json Provider Configuration -
 			JsonProvider: {
