@@ -1,6 +1,6 @@
 {
 	"name": "@liquicode/lib-user-storage",
-	"version": "0.1.2",
+	"version": "0.2.0",
 	"description": "A storage engine for user objects. Tracks user identity, ownership, and permissions.",
 	"homepage": "http://lib-user-storage.liquicode.com",
 	"license": "MIT",

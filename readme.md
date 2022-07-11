@@ -1,5 +1,5 @@
 # lib-user-storage
-***(v0.1.2)***
+***(v0.2.0)***
 
 A storage engine for user objects. Tracks object identity, ownership, and permissions.
 
