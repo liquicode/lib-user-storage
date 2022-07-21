@@ -217,6 +217,10 @@ Notices
 
 - The `JsonProvider` implementation in this library was inspired in part by the project [jsondbfs](https://github.com/mcmartins/jsondbfs).
 - The `JsonProvider` implementation in this library was inspired in part by the project [NeDB](https://github.com/louischatriot/nedb).
+- Other projects similar to `JsonProvider`:
+	- [lokijs](https://www.npmjs.com/package/lokijs)
+	- [lowdb](https://github.com/typicode/lowdb)
+	- [nedb](https://www.npmjs.com/package/nedb)
 - In dedication to my family, without whom, this work would not be possible.
 
 
