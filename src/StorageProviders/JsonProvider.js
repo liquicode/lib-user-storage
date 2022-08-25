@@ -95,10 +95,10 @@ exports.NewJsonProvider =
 							finally
 							{
 								LIB_LOCKFILE.unlockSync( lock_filename );
+								resolve();
 							}
 						}
 						storage_dirty = false;
-						resolve();
 					}
 					catch ( error )
 					{
