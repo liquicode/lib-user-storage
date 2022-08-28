@@ -57,7 +57,7 @@ describe( `011.1) JsonProvider (memory-only) Tests`,
 
 
 		//---------------------------------------------------------------------
-		describe( `Collection Tests; ${test_object_count} objects, memory only`,
+		describe( `Collection Tests; 1000 objects, memory only`,
 			function ()
 			{
 
